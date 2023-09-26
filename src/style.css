@@ -1,0 +1,13 @@
+body {
+    height: 100vh;
+    margin: 0%;
+    align-items: center;
+    background-color: rgb(0, 0, 0);
+}
+/* <div style="margin:;">HP <progress :value="hp" max="100"></progress>{{ hp }}</div>
+<div style="margin:;">Ataque <progress :value="ataque" max="100"></progress>{{ ataque }}</div>
+<div style="margin:;">Defensa <progress :value="defensa" max="100"></progress>{{ defensa }}</div>
+<div style="margin:;">AtaqueEspecial</div> <progress :value="as" max="100"></progress>{{ as }}
+<div style="margin:;">Defensa Especial<progress :value="sd" max="100"></progress>{{ sd }}</div>
+<div style="margin:;">Velocidad <progress :value="s" max="100"></progress>{{ s }}</div>
+</div> */
