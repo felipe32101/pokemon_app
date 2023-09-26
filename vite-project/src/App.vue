@@ -1,95 +1,104 @@
 <template>
   <div class="principal">
-    <div class="foto" :style="c == true ? 'display:flex' : 'display:none'">
-      <div>
-        <div
-          style="font-size: 180px; margin-top: 2%;font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; color: rgb(31, 150, 186);">
-          #{{ numero }}</div>
-        <div
-          style="font-size: 60px; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; margin-top: 6%; width: 100%; text-align: end;color: white;">
-          {{ nombre }}</div>
-        <div style="display: flex;gap: 70%; justify-content: center; color: white;">
-          <div>
-            <div> Altura</div>
-            <div>{{ estadistica }}</div>
-          </div>
-          <div>
-            <div>Peso</div>
-            <div>{{ peso }}kg</div>
-
-          </div>
-        </div>
-
+    <div v-for="(pokemon, index) in pokemons" :key="index" class="card">
+      <div class="card-content">
+        <div class="card-number">#{{ pokemon.numero }}</div>
+        <div class="card-name">{{ pokemon.nombre }}</div>
+        <div>Altura: {{ pokemon.estadistica }}</div>
+        <div>Peso: {{ pokemon.peso }}kg</div>
+        <img :src="pokemon.img" alt="Imagen de {{ pokemon.nombre }}" class="pokemon-image" />
+        <button @click="mostrarDetalle(index)">VER MAS</button>
       </div>
-      <div style="margin-top: 5%;"> <img :src="img" alt=""></div>
-
     </div>
-    <div style="color: white; text-align: center;font-size: 20px;">
-      <div class="fotos" :style="c == true ? 'display:flex' : 'display:none'">Estadistica
-        <div class="estadisticas" style="color: white;">
-        <div style="margin:;">HP <progress :value= "hp" max="100"></progress>{{ hp }}</div>
-      </div>
-      </div> 
-    </div>
-      
-    <button @click="obtenerurlpokemon()" style="display: flex; ">Peticion</button>
   </div>
 </template>
 
 <script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import axios from "axios"
-import { ref } from "vue"
+import axios from "axios";
+import { ref, onMounted } from "vue";
 
-const numero = ref(" ")
-const img = ref("")
-const nombre = ref("")
-const c = ref(false)
-const estadistica = ref("")
-const peso = ref("")
-const hp= ref("")
-const ataque= ref("")
-const defensa= ref("")
-const as= ref("")
-const sd= ref("")
-const s= ref("")
+const pokemons = ref([]);
 
 async function obtenerurlpokemon() {
-  // let e = await axios.get("https://pokeapi.co/api/v2/pokemon?limit=50&offset=0")
-  // console.log(r)
-  c.value = true
-  let r = await axios.get("https://pokeapi.co/api/v2/pokemon/3")
-  numero.value = r.data.id
-  nombre.value = r.data.name.toUpperCase()
-  estadistica.value = r.data.height
-  peso.value = r.data.weight
-  hp.value = Math.min(Math.max(r.data.stats[0].base_stat, 0), 100);
-  ataque.value =r.data.stats[1].base_stat
-  defensa.value =r.data.stats[2].base_stat
-  as.value =r.data.stats[2].base_stat
-  sd.value =r.data.stats[4].base_stat
-  s.value =r.data.stats[5].base_stat
+  for (let i = 1; i <= 50; i++) {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
+    const r = response.data;
 
-
-
-  img.value = r.data.sprites.other['official-artwork'].front_default
+    pokemons.value.push({
+      numero: r.id,
+      nombre: r.name.toUpperCase(),
+      estadistica: r.height,
+      peso: r.weight,
+      hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
+      ataque: r.stats[1].base_stat,
+      defensa: r.stats[2].base_stat,
+      as: r.stats[2].base_stat,
+      sd: r.stats[4].base_stat,
+      s: r.stats[5].base_stat,
+      img: r.sprites.other['official-artwork'].front_default,
+      mostrarDetalle: false // Agregar un campo mostrarDetalle
+    });
+  }
 }
+
+function mostrarDetalle(index) {
+  // Cambiar el valor de mostrarDetalle para el Pokémon en el índice dado
+  pokemons.value[index].mostrarDetalle = true;
+}
+
+onMounted(() => {
+  obtenerurlpokemon();
+});
 </script>
+
 <style scoped>
 .principal {
-  height: 100vh;
-}
-
-.foto {
-  gap: 8%;
-  justify-content: center;
-  flex-direction: row;
-
-}
-.fotos{
-  gap: 8%;
-  justify-content: center;
-  flex-direction: row;
   display: flex;
-  flex-direction: column;
-}</style>
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.card {
+  width: 180px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+.card-content {
+  margin-bottom: 8px;
+}
+
+.card-number {
+  font-size: 20px;
+  color: #007bff;
+}
+
+.card-name {
+  font-size: 16px;
+  margin-top: 5px;
+  margin-bottom: 8px;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.pokemon-data {
+  font-size: 14px;
+}
+.pokemon-image {
+  max-width: 100%;
+  display: block;
+  margin: 0 auto;
+  margin-top: 10px;
+}
+</style>
