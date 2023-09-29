@@ -76,7 +76,7 @@
                   <tr>
                     <td>HP</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.hp" max="100"></progress
+                      <progress :value="detallePokemon.hp" max="300"></progress
                       >{{ detallePokemon.hp }}
                     </td>
                   </tr>
@@ -85,7 +85,7 @@
                     <td class="progreso">
                       <progress
                         :value="detallePokemon.ataque"
-                        max="100"
+                        max="300"
                       ></progress
                       >{{ detallePokemon.ataque }}
                     </td>
@@ -95,7 +95,7 @@
                     <td class="progreso">
                       <progress
                         :value="detallePokemon.defensa"
-                        max="100"
+                        max="300"
                       ></progress
                       >{{ detallePokemon.defensa }}
                     </td>
@@ -103,21 +103,21 @@
                   <tr>
                     <td>Ataque Especial</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.as" max="100"></progress
+                      <progress :value="detallePokemon.as" max="300"></progress
                       >{{ detallePokemon.as }}
                     </td>
                   </tr>
                   <tr>
                     <td>Defensa Especial</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.sd" max="100"></progress
+                      <progress :value="detallePokemon.sd" max="300"></progress
                       >{{ detallePokemon.sd }}
                     </td>
                   </tr>
                   <tr>
                     <td>Velocidad</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.s" max="100"></progress
+                      <progress :value="detallePokemon.s" max="300"></progress
                       >{{ detallePokemon.s }}
                     </td>
                   </tr>
@@ -133,7 +133,7 @@
         <button
           id="cargMas"
           @click="cargarMasPokemons"
-          v-if="paginaActual * 50 <= 150"
+          v-if="paginaActual * 50 <= 500"
         >
           Cargar Más
         </button>
@@ -209,7 +209,7 @@ function abrirDetalle(index) {
   document.querySelectorAll(".stat-fill").forEach((bar) => {
     bar.classList.add("stat-fill");
   });
-  // Eliminar clase "exceeded" de todas las barras
+
   document.querySelectorAll(".stat-fill").forEach((bar) => {
     bar.classList.remove("exceeded");
   });
@@ -275,7 +275,7 @@ onMounted(() => {
   text-align: center;
   font-size: 125%;
   height: 80px;
-  background: linear-gradient(to left, rgba(0, 204, 255, 0.63), white);
+  background-color: rgba(0, 204, 255, 0.63);
   color: white;
   position: fixed;
   width: 100%;
@@ -442,7 +442,7 @@ progress {
   border-radius: 100px;
 }
 .Footer {
-  background-color: rgb(213, 255, 255);
+  background-color: rgba(0, 204, 255, 0.63);
   width: 100%;
   display: flex;
   justify-content: center;
