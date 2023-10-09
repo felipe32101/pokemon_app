@@ -1,17 +1,27 @@
 <template>
   <div>
     <div id="arriba">
-      <input type="text" name="" id="buscar" placeholder="Buscar pokemon" />
-      <input type="select" name="" id="" />
+      <input type="text" placeholder="¿Qué desea buscar?" v-model="nombrepokemon"
+        style="border-radius: 2px; text-align: center" @input="filtrarPokemonPorNombre" />
+      <div style="gap: 15px; display: flex;">
+        <select class="form-select" aria-label="Default select example" v-model="tipoSeleccionado" placeholder="tipos" @change="filtrarpokemon()" style="text-align: center;">
+            <option value="0" disabled selected>Seleccione un Tipo</option>
+            <option value="Todos">Todos</option>
+            <option v-for="(color, tipo) in colorestipo" :key="tipo" :value="tipo">
+              {{ tipo }}
+            </option>
+          </select>
+      </div>
     </div>
     <div id="busqueda"></div>
     <div class="principal">
       <div class="principal2">
         <button
           @click="abrirDetalle(index)"
-          v-for="(pokemon, index) in pokemons"
+          v-for="(pokemon, index) in filtropokemones"
           :key="index"
           class="card"
+          v-if="activarfiltro == true && filtronombre == false"
         >
           <div
             class="card-content"
@@ -218,6 +228,50 @@ function abrirDetalle(index) {
 function cerrarDetalle() {
   mostrarModal.value = false;
   indiceSeleccionado.value = -1;
+}
+
+const tipoSeleccionado = ref("Todos");
+
+const busquedaPokemon = ref("");
+const filtropokemones = ref([]);
+const activarfiltro = ref(false);
+
+function filtrarpokemon() {
+  if (tipoSeleccionado.value == "Todos") {
+    activarfiltro.value = false;
+    return;
+  }
+
+  filtropokemones.value = [];
+  pokemons.value.forEach((pokemon) => {
+    if (pokemon.tipos.includes(tipoSeleccionado.value)) {
+      filtropokemones.value.push(pokemon);
+    }
+  });
+
+  activarfiltro.value = true;
+}
+
+const pokemonBuscado = ref({});
+const nombrepokemon = ref("");
+const filtronombre = ref(false);
+
+function filtrarPokemonPorNombre() {
+  const nombre = nombrepokemon.value.toUpperCase();
+  filtronombre.value = false;
+  activarfiltro.value = false;
+
+  if (!nombre) {
+    return; // No hagas nada si el campo de búsqueda está vacío
+  }
+
+  const resultado = pokemons.value.find((pokemon) => pokemon.nombre === nombre);
+
+  if (resultado) {
+    // Si se encontró un Pokémon, muestra ese Pokémon en lugar de la lista
+    pokemonBuscado.value = resultado;
+    filtronombre.value = true;
+  }
 }
 
 const colorestipo = {
