@@ -1,20 +1,40 @@
 <template>
   <div>
     <div id="arriba">
-      <input type="text" placeholder="¿Qué desea buscar?" v-model="nombrepokemon"
-        style="border-radius: 2px; text-align: center" @input="filtrarPokemonPorNombre" />
-      <div style="gap: 15px; display: flex;">
-        <select class="form-select" aria-label="Default select example" v-model="tipoSeleccionado" placeholder="tipos" @change="filtrarpokemon()" style="text-align: center;">
-            <option value="Todos">Todos</option>
-            <option v-for="(color, tipo) in colorestipo" :key="color" :value="tipo" >
-              {{ tipo }}
-            </option>
-          </select>
+      <input
+        type="text"
+        id="buscarNombre"
+        placeholder="¿Qué desea buscar?"
+        v-model="nombrepokemon"
+        style="border-radius: 2px; text-align: center"
+        @change="filtrarPokemonPorNombre"
+      />
+      <div style="gap: 15px; display: flex">
+        <select
+          class="form-select"
+          aria-label="Default select example"
+          v-model="tipoSeleccionado"
+          placeholder="tipos"
+          @change="filtrarpokemon()"
+          style="text-align: center"
+        >
+          <option value="Todos">Todos</option>
+          <option
+            v-for="(color, tipo) in colorestipo"
+            :key="color"
+            :value="tipo"
+          >
+            {{ tipo }}
+          </option>
+        </select>
       </div>
     </div>
     <div id="busqueda"></div>
     <div class="principal">
-      <div class="principal2" v-if="activarfiltro == true && filtronombre == false">
+      <div
+        class="principal2"
+        v-if="activarfiltro == true && filtronombre == false"
+      >
         <button
           @click="abrirDetalle(index)"
           v-for="(pokemon, index) in filtropokemones"
@@ -78,7 +98,7 @@
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                " 
+                "
               >
                 <table>
                   <tr>
@@ -140,8 +160,8 @@
       <div class="Footer">
         <button
           id="cargMas"
-          @click="cargarMasPokemons"
-          v-if="paginaActual * 50 <= 500"
+          @click="cargarMasPokemonsFiltrados"
+          v-if="paginaActual * 50 < 1000"
         >
           Cargar Más
         </button>
@@ -152,9 +172,7 @@
 
 <script setup>
 import axios from "axios";
-import { ref, onMounted } from "vue";
-
-
+import { ref, onMounted, nextTick } from "vue";
 
 const pokemons = ref([]);
 const paginaActual = ref(1);
@@ -167,7 +185,7 @@ async function obtenerurlpokemon() {
     const r = response.data;
     pokemons.value.push({
       numero: r.id,
-      nombre: r.name.toUpperCase(),
+      nombre: r.name,
       estadistica: r.height / 10,
       peso: r.weight / 10,
       hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
@@ -192,12 +210,14 @@ async function cargarMasPokemons() {
   for (let i = (paginaSiguiente - 1) * 50 + 1; i <= limite; i++) {
     const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
     const r = response.data;
-    const pokemonExistente = pokemons.value.find(pokemon => pokemon.numero === r.id);
+    const pokemonExistente = pokemons.value.find(
+      (pokemon) => pokemon.numero === r.id
+    );
 
     if (!pokemonExistente) {
       nuevosPokemons.push({
         numero: r.id,
-        nombre: r.name.toUpperCase(),
+        nombre: r.name,
         estadistica: r.height / 10,
         peso: r.weight / 10,
         hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
@@ -208,12 +228,12 @@ async function cargarMasPokemons() {
         s: r.stats[5].base_stat,
         img: r.sprites.other["official-artwork"].front_default,
         mostrarDetalle: false,
-        tipos: r.types.map(e => e.type.name),
+        tipos: r.types.map((e) => e.type.name),
       });
     }
   }
 
-  filtropokemones.value = [...pokemons.value, ...nuevosPokemons];
+  filtropokemones.value = [...filtropokemones.value, ...nuevosPokemons];
   paginaActual.value = paginaSiguiente;
 }
 
@@ -241,15 +261,17 @@ function cerrarDetalle() {
 const tipoSeleccionado = ref("Todos");
 
 const busquedaPokemon = ref("");
-const filtropokemones = ref([]);
+let filtropokemones = ref([]);
 const activarfiltro = ref(false);
+
+const pokemonesSinFiltro = ref([]);
 
 function filtrarpokemon() {
   if (tipoSeleccionado.value === "Todos") {
     console.log("h");
-    filtropokemones.value = pokemons.value
+    filtropokemones.value = pokemons.value;
     console.log(filtropokemones.value);
-    console.log(pokemons.value);// Mostrar todos los Pokémon
+    console.log(pokemons.value); // Mostrar todos los Pokémon
   } else {
     filtropokemones.value = pokemons.value.filter((pokemon) =>
       pokemon.tipos.includes(tipoSeleccionado.value)
@@ -258,28 +280,30 @@ function filtrarpokemon() {
   activarfiltro.value = true;
 }
 
-filtrarpokemon()
-
 const pokemonBuscado = ref({});
 const nombrepokemon = ref("");
 const filtronombre = ref(false);
+console.log(filtropokemones.value);
 
 function filtrarPokemonPorNombre() {
-  const nombre = nombrepokemon.value.toUpperCase();
-  filtronombre.value = false;
-  activarfiltro.value = false;
+  let nombre = nombrepokemon.value.toLowerCase();
+  console.log(nombrepokemon.value);
+  filtronombre.value = true;
+  activarfiltro.value = true;
 
   if (!nombre) {
-    return; // No hagas nada si el campo de búsqueda está vacío
+    filtrarpokemon();
+    return;
   }
 
-  const resultado = pokemons.value.find((pokemon) => pokemon.nombre === nombre);
+  filtropokemones.value = pokemons.value.filter((pokemon) =>
+    pokemon.nombre.includes(nombre)
+  );
+  console.log(filtropokemones.value);
 
-  if (resultado) {
-    // Si se encontró un Pokémon, muestra ese Pokémon en lugar de la lista
-    pokemonBuscado.value = resultado;
-    filtronombre.value = true;
-  }
+  nextTick(() => {
+    console.log("Actualización de Vue completada");
+  });
 }
 
 const colorestipo = {
@@ -326,7 +350,52 @@ const tipoIconos = {
 
 onMounted(() => {
   obtenerurlpokemon();
+  filtrarpokemon();
 });
+
+async function cargarMasPokemonsFiltrados() {
+  const paginaSiguiente = paginaActual.value + 1;
+  const limite = paginaSiguiente * 50;
+
+  const nuevosPokemons = [];
+
+  for (let i = (paginaSiguiente - 1) * 50 + 1; i <= limite; i++) {
+    const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
+    const r = response.data;
+    const pokemonExistente = pokemons.value.find(
+      (pokemon) => pokemon.numero === r.id
+    );
+
+    if (!pokemonExistente) {
+      const nuevoPokemon = {
+        numero: r.id,
+        nombre: r.name.toUpperCase(),
+        estadistica: r.height / 10,
+        peso: r.weight / 10,
+        hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
+        ataque: r.stats[1].base_stat,
+        defensa: r.stats[2].base_stat,
+        as: r.stats[2].base_stat,
+        sd: r.stats[4].base_stat,
+        s: r.stats[5].base_stat,
+        img: r.sprites.other["official-artwork"].front_default,
+        mostrarDetalle: false,
+        tipos: r.types.map((e) => e.type.name),
+      };
+
+      // Si no se ha aplicado un filtro por tipo o el tipo del nuevo Pokémon coincide con el tipo seleccionado, agrégalo
+      if (
+        tipoSeleccionado.value === "Todos" ||
+        nuevoPokemon.tipos.includes(tipoSeleccionado.value)
+      ) {
+        nuevosPokemons.push(nuevoPokemon);
+      }
+    }
+  }
+
+  filtropokemones.value = [...filtropokemones.value, ...nuevosPokemons];
+  paginaActual.value = paginaSiguiente;
+}
 </script>
 
 <style scoped>
@@ -362,7 +431,7 @@ onMounted(() => {
 
 .principal {
   gap: 30px;
-  margin: 0; 
+  margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -373,16 +442,16 @@ onMounted(() => {
   background: linear-gradient(rgba(0, 204, 255, 0.63), white);
   background-position: center;
   background-repeat: no-repeat;
- width: 100%;
-  border: none; 
+  width: 100%;
+  border: none;
 }
 
-.principal2{
+.principal2 {
   display: flex;
   flex-wrap: wrap;
   gap: 35px;
   justify-content: center;
-  margin: 0; 
+  margin: 0;
   padding: 0;
 }
 
