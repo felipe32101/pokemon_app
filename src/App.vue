@@ -5,9 +5,8 @@
         style="border-radius: 2px; text-align: center" @input="filtrarPokemonPorNombre" />
       <div style="gap: 15px; display: flex;">
         <select class="form-select" aria-label="Default select example" v-model="tipoSeleccionado" placeholder="tipos" @change="filtrarpokemon()" style="text-align: center;">
-            <option value="0" disabled selected>Seleccione un Tipo</option>
             <option value="Todos">Todos</option>
-            <option v-for="(color, tipo) in colorestipo" :key="tipo" :value="tipo">
+            <option v-for="(color, tipo) in colorestipo" :key="color" :value="tipo" >
               {{ tipo }}
             </option>
           </select>
@@ -15,13 +14,12 @@
     </div>
     <div id="busqueda"></div>
     <div class="principal">
-      <div class="principal2">
+      <div class="principal2" v-if="activarfiltro == true && filtronombre == false">
         <button
           @click="abrirDetalle(index)"
           v-for="(pokemon, index) in filtropokemones"
           :key="index"
           class="card"
-          v-if="activarfiltro == true && filtronombre == false"
         >
           <div
             class="card-content"
@@ -80,7 +78,7 @@
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                "
+                " 
               >
                 <table>
                   <tr>
@@ -156,6 +154,8 @@
 import axios from "axios";
 import { ref, onMounted } from "vue";
 
+
+
 const pokemons = ref([]);
 const paginaActual = ref(1);
 const mostrarModal = ref(false);
@@ -187,32 +187,40 @@ async function cargarMasPokemons() {
   const paginaSiguiente = paginaActual.value + 1;
   const limite = paginaSiguiente * 50;
 
+  const nuevosPokemons = [];
+
   for (let i = (paginaSiguiente - 1) * 50 + 1; i <= limite; i++) {
     const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
     const r = response.data;
-    pokemons.value.push({
-      numero: r.id,
-      nombre: r.name.toUpperCase(),
-      estadistica: r.height / 10,
-      peso: r.weight / 10,
-      hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
-      ataque: r.stats[1].base_stat,
-      defensa: r.stats[2].base_stat,
-      as: r.stats[2].base_stat,
-      sd: r.stats[4].base_stat,
-      s: r.stats[5].base_stat,
-      img: r.sprites.other["official-artwork"].front_default,
-      mostrarDetalle: false,
-      tipos: r.types.map((e) => e.type.name),
-    });
+    const pokemonExistente = pokemons.value.find(pokemon => pokemon.numero === r.id);
+
+    if (!pokemonExistente) {
+      nuevosPokemons.push({
+        numero: r.id,
+        nombre: r.name.toUpperCase(),
+        estadistica: r.height / 10,
+        peso: r.weight / 10,
+        hp: Math.min(Math.max(r.stats[0].base_stat, 0), 100),
+        ataque: r.stats[1].base_stat,
+        defensa: r.stats[2].base_stat,
+        as: r.stats[2].base_stat,
+        sd: r.stats[4].base_stat,
+        s: r.stats[5].base_stat,
+        img: r.sprites.other["official-artwork"].front_default,
+        mostrarDetalle: false,
+        tipos: r.types.map(e => e.type.name),
+      });
+    }
   }
+
+  filtropokemones.value = [...pokemons.value, ...nuevosPokemons];
   paginaActual.value = paginaSiguiente;
 }
 
 const indiceSeleccionado = ref(-1);
 
 function abrirDetalle(index) {
-  detallePokemon.value = pokemons.value[index];
+  detallePokemon.value = filtropokemones.value[index];
   indiceSeleccionado.value = index;
   mostrarModal.value = true;
 
@@ -237,20 +245,20 @@ const filtropokemones = ref([]);
 const activarfiltro = ref(false);
 
 function filtrarpokemon() {
-  if (tipoSeleccionado.value == "Todos") {
-    activarfiltro.value = false;
-    return;
+  if (tipoSeleccionado.value === "Todos") {
+    console.log("h");
+    filtropokemones.value = pokemons.value
+    console.log(filtropokemones.value);
+    console.log(pokemons.value);// Mostrar todos los Pokémon
+  } else {
+    filtropokemones.value = pokemons.value.filter((pokemon) =>
+      pokemon.tipos.includes(tipoSeleccionado.value)
+    );
   }
-
-  filtropokemones.value = [];
-  pokemons.value.forEach((pokemon) => {
-    if (pokemon.tipos.includes(tipoSeleccionado.value)) {
-      filtropokemones.value.push(pokemon);
-    }
-  });
-
   activarfiltro.value = true;
 }
+
+filtrarpokemon()
 
 const pokemonBuscado = ref({});
 const nombrepokemon = ref("");
