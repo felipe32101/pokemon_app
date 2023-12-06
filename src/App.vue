@@ -1,29 +1,13 @@
 <template>
   <div>
     <div id="arriba">
-      <input
-        type="text"
-        id="buscarNombre"
-        placeholder="¿Qué desea buscar?"
-        v-model="nombrepokemon"
-        style="border-radius: 2px; text-align: center"
-        @change="filtrarPokemonPorNombre"
-      />
+      <input type="text" id="buscarNombre" placeholder="¿Qué desea buscar?" v-model="nombrepokemon"
+        style="border-radius: 2px; text-align: center" @keyup="filtrarPokemonPorNombre" />
       <div style="gap: 15px; display: flex">
-        <select
-          class="form-select"
-          aria-label="Default select example"
-          v-model="tipoSeleccionado"
-          placeholder="tipos"
-          @change="filtrarpokemon()"
-          style="text-align: center"
-        >
+        <select class="form-select" aria-label="Default select example" v-model="tipoSeleccionado" placeholder="tipos"
+          @change="filtrarpokemon()" style="text-align: center">
           <option value="Todos">Todos</option>
-          <option
-            v-for="(color, tipo) in colorestipo"
-            :key="color"
-            :value="tipo"
-          >
+          <option v-for="(color, tipo) in colorestipo" :key="color" :value="tipo">
             {{ tipo }}
           </option>
         </select>
@@ -31,20 +15,15 @@
     </div>
     <div id="busqueda"></div>
     <div class="principal">
-      <div
-        class="principal2"
-        v-if="activarfiltro == true && filtronombre == false"
-      >
-        <button
-          @click="abrirDetalle(index)"
-          v-for="(pokemon, index) in filtropokemones"
-          :key="index"
-          class="card"
-        >
-          <div
-            class="card-content"
-            style="font-family: 'Franklin Gothic Medium'; padding: 15px"
-          >
+      <div class="spinner-border" role="status" v-if="loading">
+        <span class="visually-hidden">Filtrando...</span>
+      </div>
+      <div v-if="resultados">
+        <span>Sin resultados</span>
+      </div>
+      <div class="principal2" v-if="activarfiltro == true && filtronombre == false && !loading && !resultados">
+        <button @click="abrirDetalle(index)" v-for="(pokemon, index) in filtropokemones" :key="index" class="card">
+          <div class="card-content" style="font-family: 'Franklin Gothic Medium'; padding: 15px">
             <div id="arribaCard">
               <div id="izquierda">
                 <div class="card-number" style="font-size: 50px">
@@ -54,27 +33,15 @@
                   {{ pokemon.nombre }}
                 </div>
               </div>
-              <div
-                id="derecha"
-                style="gap: 5px; display: flex; flex-direction: column"
-              >
-                <div
-                  id="tipo"
-                  v-for="(tipo, i) in pokemon.tipos"
-                  :key="i"
-                  :style="'background-color: ' + colorestipo[tipo]"
-                  class="pokemon-type"
-                >
+              <div id="derecha" style="gap: 5px; display: flex; flex-direction: column">
+                <div id="tipo" v-for="(tipo, i) in pokemon.tipos" :key="i"
+                  :style="'background-color: ' + colorestipo[tipo]" class="pokemon-type">
                   <i :class="tipoIconos[tipo]"></i>
                   <p style="margin: 0">{{ tipo }}</p>
                 </div>
               </div>
             </div>
-            <img
-              :src="pokemon.img"
-              alt="Imagen de {{ pokemon.nombre }}"
-              class="pokemon-image"
-            />
+            <img :src="pokemon.img" alt="Imagen de {{ pokemon.nombre }}" class="pokemon-image" />
           </div>
         </button>
         <div class="modal" v-if="mostrarModal">
@@ -86,67 +53,49 @@
             <h2 style="margin: 0">{{ detallePokemon.nombre }}</h2>
             <div style="display: flex; flex-direction: row">
               <div>
-                <img
-                  :src="detallePokemon.img"
-                  :alt="'Imagen de ' + detallePokemon.nombre"
-                  class="modal-image"
-                />
+                <img :src="detallePokemon.img" :alt="'Imagen de ' + detallePokemon.nombre" class="modal-image" />
               </div>
-              <div
-                style="
+              <div style="
                   width: 500px;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                "
-              >
+                ">
                 <table>
                   <tr>
                     <td>HP</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.hp" max="300"></progress
-                      >{{ detallePokemon.hp }}
+                      <progress :value="detallePokemon.hp" max="300"></progress>{{ detallePokemon.hp }}
                     </td>
                   </tr>
                   <tr>
                     <td>Ataque</td>
                     <td class="progreso">
-                      <progress
-                        :value="detallePokemon.ataque"
-                        max="300"
-                      ></progress
-                      >{{ detallePokemon.ataque }}
+                      <progress :value="detallePokemon.ataque" max="300"></progress>{{ detallePokemon.ataque }}
                     </td>
                   </tr>
                   <tr>
                     <td>Defensa</td>
                     <td class="progreso">
-                      <progress
-                        :value="detallePokemon.defensa"
-                        max="300"
-                      ></progress
-                      >{{ detallePokemon.defensa }}
+                      <progress :value="detallePokemon.defensa" max="300"></progress>{{ detallePokemon.defensa }}
                     </td>
                   </tr>
                   <tr>
                     <td>Ataque Especial</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.as" max="300"></progress
-                      >{{ detallePokemon.as }}
+                      <progress :value="detallePokemon.as" max="300"></progress>{{ detallePokemon.as }}
                     </td>
                   </tr>
                   <tr>
                     <td>Defensa Especial</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.sd" max="300"></progress
-                      >{{ detallePokemon.sd }}
+                      <progress :value="detallePokemon.sd" max="300"></progress>{{ detallePokemon.sd }}
                     </td>
                   </tr>
                   <tr>
                     <td>Velocidad</td>
                     <td class="progreso">
-                      <progress :value="detallePokemon.s" max="300"></progress
-                      >{{ detallePokemon.s }}
+                      <progress :value="detallePokemon.s" max="300"></progress>{{ detallePokemon.s }}
                     </td>
                   </tr>
                 </table>
@@ -158,11 +107,7 @@
         </div>
       </div>
       <div class="Footer">
-        <button
-          id="cargMas"
-          @click="cargarMasPokemonsFiltrados"
-          v-if="paginaActual * 50 < 1000"
-        >
+        <button id="cargMas" @click="cargarMasPokemonsFiltrados" v-if="paginaActual * 50 < 1000">
           Cargar Más
         </button>
       </div>
@@ -266,8 +211,15 @@ const activarfiltro = ref(false);
 
 const pokemonesSinFiltro = ref([]);
 
-function filtrarpokemon() {
-  if (tipoSeleccionado.value === "Todos") {
+const loading = ref(false)
+let inicial = 0
+let final = 50
+let filtro = true
+const pokes = ref([])
+let reinicio = ''
+
+async function filtrarpokemon() {
+  /* if (tipoSeleccionado.value === "Todos") {
     console.log("h");
     filtropokemones.value = pokemons.value;
     console.log(filtropokemones.value);
@@ -277,6 +229,54 @@ function filtrarpokemon() {
       pokemon.tipos.includes(tipoSeleccionado.value)
     );
   }
+  activarfiltro.value = true; */
+  console.log(pokemons.value);
+
+  if (tipoSeleccionado.value === "Todos") {
+    console.log("h");
+    filtropokemones.value = pokemons.value;
+    console.log(filtropokemones.value);
+    console.log(pokemons.value); // Mostrar todos los Pokémon
+  } else {
+    if (reinicio != tipoSeleccionado.value) {
+      pokes.value = []
+      filtro = true
+      inicial = 0
+      final = 50
+    }
+    reinicio = tipoSeleccionado.value
+    if (filtro) loading.value = true
+    const buscar = await axios.get(`https://pokeapi.co/api/v2/type/${tipoSeleccionado.value}`)
+    console.log(buscar);
+
+    for (let i = inicial; i <= final; i++) {
+      if (inicial >= buscar.data.pokemon.length) {
+        break
+      }
+      let poke = await axios.get(buscar.data.pokemon[i].pokemon.url)
+      console.log(poke);
+      poke = poke.data
+      pokes.value.push({
+        numero: poke.id,
+        nombre: poke.name,
+        estadistica: poke.height / 10,
+        peso: poke.weight / 10,
+        hp: Math.min(Math.max(poke.stats[0].base_stat, 0), 100),
+        ataque: poke.stats[1].base_stat,
+        defensa: poke.stats[2].base_stat,
+        as: poke.stats[2].base_stat,
+        sd: poke.stats[4].base_stat,
+        s: poke.stats[5].base_stat,
+        img: poke.sprites.other["official-artwork"].front_default,
+        mostrarDetalle: false,
+        tipos: poke.types.map((e) => e.type.name)
+      })
+    }
+    filtropokemones.value = pokes.value
+
+    loading.value = false
+
+  }
   activarfiltro.value = true;
 }
 
@@ -285,25 +285,75 @@ const nombrepokemon = ref("");
 const filtronombre = ref(false);
 console.log(filtropokemones.value);
 
-function filtrarPokemonPorNombre() {
+const resultados = ref(false)
+
+async function filtrarPokemonPorNombre() {
+  resultados.value = false
   let nombre = nombrepokemon.value.toLowerCase();
   console.log(nombrepokemon.value);
-  filtronombre.value = true;
+  // filtronombre.value = true;
   activarfiltro.value = true;
+  if (nombre.trim() === '') {
+    console.log("a");
+    filtrarpokemon()
+    return
+  }
 
   if (!nombre) {
     filtrarpokemon();
     return;
   }
 
-  filtropokemones.value = pokemons.value.filter((pokemon) =>
+  /* filtropokemones.value = pokemons.value.filter((pokemon) =>
     pokemon.nombre.includes(nombre)
   );
   console.log(filtropokemones.value);
 
   nextTick(() => {
     console.log("Actualización de Vue completada");
-  });
+  }); */
+  loading.value = true
+  try {
+    const buscar = await axios.get(`https://pokeapi.co/api/v2/pokemon/${nombre}`)
+    console.log(buscar);
+
+    resultados.value = false
+
+    const poke = buscar.data
+
+    const pokes = {
+      numero: poke.id,
+      nombre: poke.name,
+      estadistica: poke.height / 10,
+      peso: poke.weight / 10,
+      hp: Math.min(Math.max(poke.stats[0].base_stat, 0), 100),
+      ataque: poke.stats[1].base_stat,
+      defensa: poke.stats[2].base_stat,
+      as: poke.stats[2].base_stat,
+      sd: poke.stats[4].base_stat,
+      s: poke.stats[5].base_stat,
+      img: poke.sprites.other["official-artwork"].front_default,
+      mostrarDetalle: false,
+      tipos: poke.types.map((e) => e.type.name)
+    }
+
+    console.log(pokes);
+
+    filtropokemones.value = [pokes]
+
+  } catch (error) {
+    console.log(error);
+    if (error.response.data == "Not Found") {
+      console.log("ha");
+
+      resultados.value = true
+      return
+    }
+  } finally {
+    loading.value = false
+
+  }
+
 }
 
 const colorestipo = {
@@ -359,6 +409,14 @@ async function cargarMasPokemonsFiltrados() {
 
   const nuevosPokemons = [];
 
+  if (tipoSeleccionado.value != 'Todos') {
+    inicial += 51
+    final += 50
+    filtro = false
+    filtrarpokemon()
+    return
+  }
+
   for (let i = (paginaSiguiente - 1) * 50 + 1; i <= limite; i++) {
     const response = await axios.get(`https://pokeapi.co/api/v2/pokemon/${i}`);
     const r = response.data;
@@ -385,8 +443,7 @@ async function cargarMasPokemonsFiltrados() {
 
       // Si no se ha aplicado un filtro por tipo o el tipo del nuevo Pokémon coincide con el tipo seleccionado, agrégalo
       if (
-        tipoSeleccionado.value === "Todos" ||
-        nuevoPokemon.tipos.includes(tipoSeleccionado.value)
+        tipoSeleccionado.value === "Todos"
       ) {
         nuevosPokemons.push(nuevoPokemon);
       }
@@ -502,6 +559,7 @@ button {
 .pokemon-data {
   font-size: 14px;
 }
+
 .pokemon-image {
   max-width: 100%;
   display: block;
@@ -572,6 +630,7 @@ progress {
   height: 50px;
   border-radius: 100px;
 }
+
 .Footer {
   background-color: rgba(0, 204, 255, 0.63);
   width: 100%;
